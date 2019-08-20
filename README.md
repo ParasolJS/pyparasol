@@ -113,6 +113,7 @@ parasol.css, d3.v5.min.js, parasol.standalone.js all come from the parasol-es re
 
 **PyParasol.show(port=8000)**
 -	port: integer
+-	With this function a user can easily display the Parasol application after finishing setting all attributes. This is the recommended function.
 -	Combines compile(), startLocalServer(port) and displayWebpage() into one function. Calling show(port) will allow a user to compile their html file, start a local server and automatically open up the webpage with one function for simplicity. 
 -	Read displayWebpage() and startLocalServer() for information about port parameter.
 
