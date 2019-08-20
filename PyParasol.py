@@ -1,10 +1,15 @@
+# PyParasol
+# For more information on PyParasol and for a full API, refer to https://github.com/ParasolJS/pyparasol
+
 from combine_csv import combine_csv
 from http.server import SimpleHTTPRequestHandler
 from webbrowser import open as open_website
 from socketserver import TCPServer
 
-
 # this class contains all the options for a single plot, and a method for writing all the plot specific attributes
+# instances of this class should not be made by the user, as there is no use for them except when called from
+#   the PyParasol class.
+# information about plot attributes can be found at https://github.com/ParasolJS/parasol-es/wiki/API-Reference
 class ParasolPlot:
     # plot data information
     file_name = None
@@ -68,7 +73,7 @@ class ParasolPlot:
 
 # the class parasol contains all attributes for a parasol plot as well as all methods for writing a parasol html file
 # all class variables and functions with __ in front of them are intended to not be used by the user
-class Parasol:
+class PyParasol:
     # list of individual parasol plots
     __parasol_plot_list = None
 
