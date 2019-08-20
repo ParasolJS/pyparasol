@@ -4,9 +4,9 @@ PyParasol doesn't require any knowledge of html, css or starting local servers.
 From PyParasol you can add your data to the application, set different plot 
 attributes and display your Parasol application all from within one python script.
 
+### Refer to https://github.com/ParasolJS/parasol-es for more information on what Parasol does
 parasol.css, d3.v5.min.js, parasol.standalone.js all come from https://github.com/ParasolJS/parasol-es.
-
-# **API**
+# API
 **PyParasol(page_title=””, tab_title=”PyParasol”, attach_grid_status=False, link_plots_status=True, output_html_file_name=”parasol.html”)**
 -	Creates Parasol object
 -	page_title gets called through setPageTitle(), default is a blank string (no title will be displayed)
@@ -64,11 +64,11 @@ parasol.css, d3.v5.min.js, parasol.standalone.js all come from https://github.co
 -	**plot_id_list specifies which plots you want to link together. If it is set to none, all plots will be linked if linked_status is set to true. This is the default.**
 
 **PyParasol.setColorCluster(cluster_status, variables_to_cluster=None, number_colors=4, plot_id_list=None)**
--	cluster_status is a Boolean which determines if color clustering will be turned on or off
+-	cluster_status is a Boolean which determines if color clustering will be turned on or off.
 -	variables_to_cluster determines which variabes, defined as column headers from the data file, to base the color clustering on. If set to none, which is default, it will cluster based on all variables. Do not cluster qualitative variables.
--	number_colors determines how many different color groups will be made when clustering
--	plot_id_list determines which plots will have color clustering. If set to none, all plots will use the same color clustering
--	Note: it is only possible to have one cluster statement, if multiple setColorCluster calls are made, only the last one will be used
+-	number_colors determines how many different color groups will be made when clustering.
+-	plot_id_list determines which plots will have color clustering. If set to none, all plots will use the same color clustering.
+-	Note: it is only possible to have one cluster statement, if multiple setColorCluster calls are made, only the last one will be used.
 
 **PyParasol.assignWeightedSums(variable_list, associated_weights, plot_id_list=None)**
 -	variable_list determines which variables will have weight associated with them for creating a weighted sum axes.
@@ -81,7 +81,7 @@ parasol.css, d3.v5.min.js, parasol.standalone.js all come from https://github.co
 -	This function allows the user to control the lower and upper limit that will be displayed on each variables’ axes.
 -	variable_list determines which variables will have a scale associated with them. Okay to enter as a single data point.
 -	scale_list determines the lower and upper limits of the data of the corresponding variable name in variable_list. Each scale object needs to be a list of length two in the form, [minimum, maximum]. It is okay to enter a single scale item if there is only a single variable name, other wise it has to be entered as a list of lists, for example [[min1, max1], [min2, max2]].
--	plot_id_list determines which plots will have the variable scales attribute associated with. If set to None, attribute will be set to all plots
+-	plot_id_list determines which plots will have the variable scales attribute associated with. If set to None, attribute will be set to all plots.
 
 **PyParasol.compile()**
 -	Compiles all plots and user settings into the final html file and saves it to parasol.html unless previously changed by the user.
