@@ -120,4 +120,4 @@ parasol.css, d3.v5.min.js, parasol.standalone.js all come from the parasol-es re
 -	Read displayWebpage() and startLocalServer() for information about port parameter.
 
 # Acknowledgements
-PyParasol and Parasol were created the by the Kasprzyk Research Group at the University Of Colorado Boulder
+PyParasol and Parasol were created by the Kasprzyk Research Group at the University of Colorado Boulder
