@@ -6,6 +6,8 @@ attributes and display your Parasol application all from within one simple Pytho
 
 ### Refer to https://github.com/ParasolJS/parasol-es for more information on what Parasol does.
 parasol.css, d3.v5.min.js, parasol.standalone.js all come from the parasol-es repository.
+### Python Dependencies
+-	pandas
 # API
 **PyParasol(page_title=””, tab_title=”PyParasol”, attach_grid_status=False, link_plots_status=True, output_html_file_name=”parasol.html”)**
 -	Creates Parasol object.
