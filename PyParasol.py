@@ -6,11 +6,12 @@ from http.server import SimpleHTTPRequestHandler
 from webbrowser import open as open_website
 from socketserver import TCPServer
 
+
 # this class contains all the options for a single plot, and a method for writing all the plot specific attributes
 # instances of this class should not be made by the user, as there is no use for them except when called from
 #   the PyParasol class.
 # information about plot attributes can be found at https://github.com/ParasolJS/parasol-es/wiki/API-Reference
-class ParasolPlot:
+class _ParasolPlot:
     # plot data information
     file_name = None
     plot_id = None
@@ -146,7 +147,7 @@ class PyParasol:
         temp.close()
 
         # creating new parasol plot item
-        new_plot = ParasolPlot(file_name, str(plot_id))
+        new_plot = _ParasolPlot(file_name, str(plot_id))
 
         # adding all attributes if they exist
         if plot_title is not None:
@@ -211,14 +212,14 @@ class PyParasol:
                 self.__parasol_plot_list[plot_id].reorderable = reorder_status
 
     # this function sets the alpha level of the plots
-    def setPlotAlpha(self, new_alpha, plot_id_list=None):
-        new_alpha = self.__validate_alpha__(new_alpha)
-        if new_alpha == 0:
+    def setPlotAlpha(self, plot_alpha, plot_id_list=None):
+        plot_alpha = self.__validate_alpha__(plot_alpha)
+        if plot_alpha == 0:
             return
         ids_to_change = self.__find_plot_index_from_id__(plot_id_list)
         if ids_to_change != 0:
             for plot_id in ids_to_change:
-                self.__parasol_plot_list[plot_id].alpha = new_alpha
+                self.__parasol_plot_list[plot_id].alpha = plot_alpha
 
     # this function sets the brushed on alpha variable
     def setAlphaOnBrushed(self, alpha_on_brushed, plot_id_list=None):
@@ -652,16 +653,16 @@ class PyParasol:
             for header_to_hide in self.__parasol_plot_list[plot_number].columns_to_hide:
                 final_html_lines += '"' + header_to_hide + '", '
             # loops through every plots header list for each plot
-            for plot_headers in range(len(header_list)):
+            for plot_headers_number in range(len(header_list)):
                 # skips iteration so the headers of a plot don't get added to the plots own axes-to-hide list
-                if plot_headers == plot_number:
+                if plot_headers_number == plot_number:
                     continue
                 # if two plots have the same data set, skips so all data doesn't get erased
-                if self.__parasol_plot_list[plot_number].file_name == self.__parasol_plot_list[plot_headers].file_name:
+                if self.__parasol_plot_list[plot_number].file_name == self.__parasol_plot_list[plot_headers_number].file_name:
                     continue
                 # if the current header list isn't for the current plot, adds the header lists to axes to hide
-                for header in range(len(header_list[plot_headers])):
-                    final_html_lines += '"' + header_list[plot_headers][header] + '", '
+                for header in range(len(header_list[plot_headers_number])):
+                    final_html_lines += '"' + header_list[plot_headers_number][header] + '", '
             final_html_lines += ']'
             if plot_number != len(header_list) - 1:
                 final_html_lines += ','
@@ -689,7 +690,6 @@ class PyParasol:
         return final_html_lines
 
     # this function is the master function for assigning buttons to their actions
-    # it contains an inventory of what button is associated to what action
     def __write_button_action_master__(self):
         # if there are no buttons, skips
         if self.__button_text_names is None or self.__button_variable_names is None:
@@ -697,15 +697,24 @@ class PyParasol:
         final_html_lines = ""
         # loops through all variable names
         for button_variable_name in self.__button_variable_names:
-            # inventory for assigning buttons to their actions
-            if button_variable_name == "export_brushed":
-                action = "\nps.exportData(type='brushed')"
-            elif button_variable_name == "export_marked":
-                action = "\nps.exportData(type='marked')"
-            else:
-                continue
-            final_html_lines += self.__write_button_action_lines__(button_variable_name, action)
+            # gets buttons action and then writes the full button action function
+            action = self.__get_button_action__(button_variable_name)
+            if action is not None:
+                final_html_lines += self.__write_button_action_lines__(button_variable_name, action)
+
         return final_html_lines
+
+    # this function contains the inventory for assigning button variable names with their actions
+    def __get_button_action__(self, variable_name):
+        # @@@@@@@@ BUTTON ACTION INVENTORY @@@@@@@@@
+        if variable_name == "export_brushed":
+            action = "\nps.exportData(type='brushed')"
+        elif variable_name == "export_marked":
+            action = "\nps.exportData(type='marked')"
+        else:
+            action = None
+
+        return action
 
     # this is the master function for writing all parasol html file lines
     # some of the functions are always called even if they won't do anything based on user options
@@ -762,7 +771,11 @@ class PyParasol:
 
     # this function compiles the parasol html file and the output csv file
     # this function *DOES NOT* start a local server and run open a parasol window, it just creates it
-    def compile(self):
+    def compile(self, html_file_name=None):
+        # assigns new html file name if one is specified
+        if html_file_name is not None:
+            self.setHTMLFileName(html_file_name)
+
         # if there is no data that has been added yet, exits program
         if len(self.__parasol_plot_list) == 0:
             print("no data files have been specified, will not compile")
