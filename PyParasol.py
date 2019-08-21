@@ -374,22 +374,25 @@ class PyParasol:
     # @@@@@@@@ BUTTON OPTIONS @@@@@@@@@@
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    # this function sets the optional export brushed button
-    def addExportBrushedButton(self, export_brushed=True):
-        export_brushed = self.__validate_data_is_list_or_single__(export_brushed, bool)
-        if export_brushed != 0:
-            self.__button_text_names.append("Export Brushed Data")
-            self.__button_variable_names.append("export_brushed")
-        else:
-            print("export brushed button settings are not valid")
+    # this function sets the optional export brushed data button
+    def addExportBrushedButton(self):
+        self.__button_text_names.append("Export Brushed Data")
+        self.__button_variable_names.append("export_brushed")
 
-    def addExportMarkedButton(self, export_marked=True):
-        export_marked = self.__validate_data_is_list_or_single__(export_marked, bool)
-        if export_marked != 0:
-            self.__button_variable_names.append("export_marked")
-            self.__button_text_names.append("Export Marked Data")
-        else:
-            print("export marked button settings are not valid")
+    # this function sets the optional export marked data button
+    def addExportMarkedButton(self):
+        self.__button_text_names.append("Export Marked Data")
+        self.__button_variable_names.append("export_marked")
+
+    # this function sets the optional reset brushed data button
+    def addResetBrushedButton(self):
+        self.__button_text_names.append("Reset Brushed Data")
+        self.__button_variable_names.append("reset_brushed")
+
+    # this function sets the optional reset brushed data button
+    def addResetMarkedButton(self):
+        self.__button_text_names.append("Reset Marked Data")
+        self.__button_variable_names.append("reset_marked")
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     # @@@@@@@ HELPER FUNCTIONS @@@@@@@@@@
@@ -633,7 +636,7 @@ class PyParasol:
         return final_html_line
 
     # this function writes the weights variables for the weighted sum option
-    def __write_weights_variable(self):
+    def __write_weights_variable__(self):
         if self.__weighted_weight_list is None or self.__weighted_variable_list is None:
             return ""
         final_html_lines = "\nvar weights = {"
@@ -711,6 +714,10 @@ class PyParasol:
             action = "\nps.exportData(type='brushed')"
         elif variable_name == "export_marked":
             action = "\nps.exportData(type='marked')"
+        elif variable_name == "reset_brushed":
+            action = "\nps.resetSelections('brushed')"
+        elif variable_name == "reset_marked":
+            action = "\nps.resetSelections('marked')"
         else:
             action = None
 
@@ -727,7 +734,7 @@ class PyParasol:
         html_final += self.__write_end_body_start_script__(final_data_file)
         html_final += self.__write_axes_to_hide__(header_list)
         html_final += self.__write_axes_layout__()
-        html_final += self.__write_weights_variable()
+        html_final += self.__write_weights_variable__()
         html_final += self.__write_parasol_variable__()
         html_final += self.__write_specific_plot_attribute_lines__()
         html_final += self.__write_button_action_master__()
