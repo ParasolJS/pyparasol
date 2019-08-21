@@ -119,5 +119,17 @@ parasol.css, d3.v5.min.js, parasol.standalone.js all come from the parasol-es re
 -	Combines compile(), startLocalServer(port) and displayWebpage() into one function. Calling show(port) will allow a user to compile their html file, start a local server and automatically open up the webpage with one function for simplicity. 
 -	Read displayWebpage() and startLocalServer() for information about port parameter.
 
+**PyParasol.addExportBrushedButton()**
+-	Adds a button to the Parasol application that will export brushed data.
+
+**PyParasol.addExportMarkedButton()**
+-	Adds a button to the Parasol application that will export marked data.
+
+**PyParasol.addResetBrushedButton()**
+-	Adds a button to the Parasol application that will reset brushed data selections.
+
+**PyParasol.addResetMarkedButton()**
+-	Adds a button to the Parasol application that will reset marked data selections.
+
 # Acknowledgements
-PyParasol and Parasol were created by the Kasprzyk Research Group at the University of Colorado Boulder
+PyParasol and Parasol were created by the Kasprzyk Research Group at the University of Colorado Boulder.
