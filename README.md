@@ -10,7 +10,7 @@ attributes and display your Parasol application all from within one simple Pytho
 -	pandas
 # API
 **PyParasol(page_title=””, tab_title=”PyParasol”, attach_grid_status=False, link_plots_status=True, output_html_file_name=”parasol.html”)**
--	Creates Parasol object.
+-	Creates Parasol object, all parameters are optional.
 -	page_title gets called through setPageTitle(), default is a blank string (no title will be displayed).
 -	tab_title gets called through setTabTitle(), default is “PyParasol”.
 -	attach_grid_status gets called through setGridStatus(), default is False.
