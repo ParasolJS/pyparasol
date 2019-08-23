@@ -6,19 +6,18 @@ from http.server import SimpleHTTPRequestHandler
 from webbrowser import open as open_website
 from socketserver import TCPServer
 
-# this class contains all the options for a single plot, and a method for writing all the plot specific attributes
+
+# this class contains all the options for a single plot, and a method for writing all the plot specific attributes.
 # instances of this class should not be made by the user, as there is no use for them except when called from
 #   the PyParasol class.
 # information about plot attributes can be found at https://github.com/ParasolJS/parasol-es/wiki/API-Reference
-class ParasolPlot:
+class _ParasolPlot:
     # plot data information
     file_name = None
     plot_id = None
     plot_title = None
     axes_layout = None
     columns_to_hide = None
-    variables_to_scale_list = None
-    variables_scale_limit_list=None
 
     # styling attributes
     alpha = None
@@ -26,6 +25,9 @@ class ParasolPlot:
     alpha_on_brush = None
     color_on_brush = None
     reorderable = None
+    variables_scale_limit_list = None
+    variables_to_scale_list = None
+    variables_to_flip_list = None
 
     def __init__(self, file_name, plot_id):
         # only plot data information gets set to defaults
@@ -37,8 +39,10 @@ class ParasolPlot:
         self.columns_to_hide = []
         self.variables_to_scale_list = []
         self.variables_scale_limit_list = []
+        self.variables_to_flip_list = []
 
-    # this function writes all the paracoord attributes specific to the plot
+    # this function writes all the Parcoords attributes specific to the plot.
+    # plot id number is which 
     def write_self_attributes(self, plot_id_number):
         final_html_lines = "\nps.charts[" + str(plot_id_number) + "]"
 
@@ -66,6 +70,9 @@ class ParasolPlot:
         if self.variables_to_scale_list:
             for variable, scale in zip(self.variables_to_scale_list, self.variables_scale_limit_list):
                 final_html_lines += ".scale('" + str(variable) + "', " + str(scale) + ")"
+
+        if self.variables_to_flip_list:
+            final_html_lines += ".flipAxes(" + str(self.variables_to_flip_list) + ")"
 
         final_html_lines += ";"
         return final_html_lines
@@ -100,6 +107,7 @@ class PyParasol:
     __button_variable_names = None
     __button_text_names = None
 
+    # initializes PyParasol object, sets class attributes to defaults.
     def __init__(self,
                  page_title="",
                  tab_title="PyParasol",
@@ -122,11 +130,10 @@ class PyParasol:
         # setting output html file name
         self.setHTMLFileName(output_html_file_name)
 
-    # Adding csv file with data you want to be displayed as its own parallel plot
-    # plot name is what the header name will be above the plot
-    # if no plot title is specified, there won't be a title for the plot
-    # the plot id is required and is how a user changes settings for that plot
-    # columns to hide needs to be entered as a list of strings of column headers that you *DON'T* want displayed
+    # Adding csv file with data you want to be displayed as its own parallel plot.
+    # plot name is what the header name will be above the plot on the Parasol application.
+    # if no plot title is specified, there won't be a title for the plot.
+    # the plot id is required and is how a user changes settings for that plot.
     # *****SETTING AXES LAYOUT WILL OVERRIDE SETTING COLUMNS TO HIDE************
     def addPlot(self,
                 file_name,
@@ -134,6 +141,7 @@ class PyParasol:
                 plot_title=None,
                 columns_to_hide=None,
                 axes_layout=None,
+                axes_to_flip=None,
                 plot_color=None,
                 brushed_color=None,
                 plot_alpha=None,
@@ -146,7 +154,7 @@ class PyParasol:
         temp.close()
 
         # creating new parasol plot item
-        new_plot = ParasolPlot(file_name, str(plot_id))
+        new_plot = _ParasolPlot(file_name, str(plot_id))
 
         # adding all attributes if they exist
         if plot_title is not None:
@@ -154,6 +162,9 @@ class PyParasol:
         # axes layout list
         if axes_layout is not None:
             new_plot.axes_layout = axes_layout
+        # axes to flip list
+        if axes_to_flip is not None:
+            new_plot.variables_to_flip_list = axes_to_flip
         # columns to hide list
         if columns_to_hide is not None:
             new_plot.columns_to_hide = columns_to_hide
@@ -186,21 +197,21 @@ class PyParasol:
     # @@@@@ PARASOL APPLICATION SETTINGS @@@@@@
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    # this function is for setting the name at the top of the parasol app page
+    # this function is for setting the name at the top of the parasol app page.
     def setPageTitle(self, page_title):
         if type(page_title) != str:
             print("page title not set to a valid string")
             return
         self.__page_title = page_title
 
-    # this function is for setting the title of the tab of the parasol app page
+    # this function is for setting the title of the tab of the parasol app page.
     def setTabTitle(self, tab_title):
         if type(tab_title) != str:
             print("tab title not set to a valid string")
             return
         self.__page_tab_title = tab_title
 
-    # this function determines whether or not the plots will be reorderable
+    # this function determines whether or not the plots will be reorderable.
     def setReorderableStatus(self, reorder_status, plot_id_list=None):
         if type(reorder_status) is not bool:
             print('Set reorder status to True or False')
@@ -210,17 +221,17 @@ class PyParasol:
             for plot_id in ids_to_change:
                 self.__parasol_plot_list[plot_id].reorderable = reorder_status
 
-    # this function sets the alpha level of the plots
-    def setPlotAlpha(self, new_alpha, plot_id_list=None):
-        new_alpha = self.__validate_alpha__(new_alpha)
-        if new_alpha == 0:
+    # this function sets the alpha level of the plots.
+    def setPlotAlpha(self, plot_alpha, plot_id_list=None):
+        plot_alpha = self.__validate_alpha__(plot_alpha)
+        if plot_alpha == 0:
             return
         ids_to_change = self.__find_plot_index_from_id__(plot_id_list)
         if ids_to_change != 0:
             for plot_id in ids_to_change:
-                self.__parasol_plot_list[plot_id].alpha = new_alpha
+                self.__parasol_plot_list[plot_id].alpha = plot_alpha
 
-    # this function sets the brushed on alpha variable
+    # this function sets the brushed on alpha variable.
     def setAlphaOnBrushed(self, alpha_on_brushed, plot_id_list=None):
         alpha_on_brushed = self.__validate_alpha__(alpha_on_brushed)
         if alpha_on_brushed == 0:
@@ -230,25 +241,22 @@ class PyParasol:
             for plot_id in ids_to_change:
                 self.__parasol_plot_list[plot_id].alpha_on_brush = alpha_on_brushed
 
-    # this function determines whether or not there will be a grid of data attached
+    # this function determines whether or not there will be a grid of data attached.
     def setGridStatus(self, grid_status):
         if type(grid_status) is not bool:
             print('Set grid status to True or False')
             return
         self.__attachGrid = grid_status
 
-    # this function allows the user to set the file name of the outputted html file
+    # this function allows the user to set the file name of the outputted html file.
     def setHTMLFileName(self, new_html_file_name):
         if self.__validate_file_name__(new_html_file_name, 'html'):
             print("html file name not valid")
             return
         self.__html_file_name = new_html_file_name
 
-    # this function specifies whether or not to link the plots together
-    # linked plots defaults to yes, so plots are interactive with eachother
-    # linked charts list is optional and specifies which specific plots to list
-    # if no linked chart list parameter is given, it will link all plots together
-    # linked chart list needs to take in a list of integers representing plot numbers, starting at 0
+    # this function specifies whether or not to link the plots together.
+    # linked plots defaults to yes, so plots are interactive with each other.
     def setLinkedStatus(self, linked_status, plot_id_list=None):
         if type(linked_status) is not bool:
             print('Set linked status to True or False')
@@ -259,8 +267,7 @@ class PyParasol:
                 self.__linked_plots_list = plot_id_list
         self.__link_plots = linked_status
 
-
-    # this function sets the color of the plot
+    # this function sets the color of the plot.
     # WARNING: setting an overall plot color will override a plot cluster
     def setPlotColor(self, plot_color, plot_id_list=None):
         plot_color = self.__validate_color__(plot_color)
@@ -271,7 +278,7 @@ class PyParasol:
             for plot_id in ids_to_change:
                 self.__parasol_plot_list[plot_id].color = plot_color
 
-    # this function sets the color when a plot is brushed
+    # this function sets the color when a plot is brushed.
     def setBrushedColor(self, brushed_color, plot_id_list=None):
         brushed_color = self.__validate_color__(brushed_color)
         if brushed_color == 0:
@@ -281,9 +288,9 @@ class PyParasol:
             for plot_id in ids_to_change:
                 self.__parasol_plot_list[plot_id].color_on_brush = brushed_color
 
-    # this function sets the color clustering functionality
-    # plots to cluster needs to be entered as a list of integers associating plot number
-    # if no variables to cluster attribute is added, it will cluster all of them
+    # this function sets the color clustering functionality.
+    # plots to cluster needs to be entered as a list of integers associating plot number.
+    # if no variables to cluster attribute is added, it will cluster all of them.
     def setColorCluster(self, cluster_status, variables_to_cluster=None, number_colors=4, plot_id_list=None):
         # validating inputs
         if type(cluster_status) is not bool:
@@ -293,7 +300,7 @@ class PyParasol:
             int(number_colors)
             if number_colors < 1:
                 raise Exception('invalid number of colors')
-        except Exception:
+        except TypeError:
             print('set number of colors to a valid positive integer')
             return
 
@@ -313,9 +320,9 @@ class PyParasol:
         self.__number_of_cluster_colors = number_colors
         self.__variables_to_cluster = variables_to_cluster
 
-    # this function assigns weights to certain variables to make a weighted sums variable
-    # variable list is a list of the variables that will have a weight associated to them
-    # associated weights is the list of weights that correspond the variable list
+    # this function assigns weights to certain variables to make a weighted sums variable.
+    # variable list is a list of the variables that will have a weight associated to them.
+    # associated weights is the list of weights that correspond the variable list.
     def assignWeightedSums(self, variable_list, associated_weights, plot_id_list=None):
         variable_list = self.__validate_data_is_list_or_single__(variable_list, str)
         associated_weights = self.__validate_data_is_list_or_single__(associated_weights, float)
@@ -332,15 +339,17 @@ class PyParasol:
             if plot_id_list != 0:
                 self.__weighted_plots_to_add_weights = plot_id_list
 
-    # this function assigns scales (lower and upper limits for axes) to a variable or list of variables
-    # you can enter variables as a list of variables or one variable name
-    # you can enter scale_list as one list [min, max] or a list of scale-lists: [[min1, max1], [min2, max2]]
+    # this function assigns scales (lower and upper limits for axes) to a variable or list of variables.
+    # you can enter variables as a list of variables or one variable name.
+    # you can enter scale_list as one list [min, max] or a list of scale-lists: [[min1, max1], [min2, max2]].
     def setVariableScale(self, variable_list, scale_list, plot_id_list=None):
         variable_list = self.__validate_data_is_list_or_single__(variable_list, str)
         # validating that scale_list is a valid scale, or list of scales
         bad_data = False
         try:
+            # determining if scale list is a single list or a list of lists
             temp = scale_list[0][0]
+            # if scale list is a list of lists, validates every list in it
             for scale in scale_list:
                 # if scale isn't a list in the form [min, max]
                 if len(scale) != 2:
@@ -348,7 +357,7 @@ class PyParasol:
                 scale = self.__validate_data_is_list_or_single__(scale, float)
                 if scale == 0:
                     bad_data = True
-        except Exception:
+        except TypeError:
             scale_list = self.__validate_data_is_list_or_single__(scale_list, float)
             if scale_list == 0 or len(scale_list) != 2:
                 bad_data = True
@@ -373,31 +382,49 @@ class PyParasol:
     # @@@@@@@@ BUTTON OPTIONS @@@@@@@@@@
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    # this function sets the optional export brushed button
-    def addExportBrushedButton(self, export_brushed=True):
-        export_brushed = self.__validate_data_is_list_or_single__(export_brushed, bool)
-        if export_brushed != 0:
-            self.__button_text_names.append("Export Brushed Data")
-            self.__button_variable_names.append("export_brushed")
-        else:
-            print("export brushed button settings are not valid")
+    # this function sets the optional export brushed data button.
+    def addExportBrushedButton(self):
+        self.__button_text_names.append("Export Brushed Data")
+        self.__button_variable_names.append("export_brushed")
 
-    def addExportMarkedButton(self, export_marked=True):
-        export_marked = self.__validate_data_is_list_or_single__(export_marked, bool)
-        if export_marked != 0:
-            self.__button_variable_names.append("export_marked")
-            self.__button_text_names.append("Export Marked Data")
-        else:
-            print("export marked button settings are not valid")
+    # this function sets the optional export marked data button.
+    def addExportMarkedButton(self):
+        self.__button_text_names.append("Export Marked Data")
+        self.__button_variable_names.append("export_marked")
+
+    # this function sets the optional export all data button.
+    def addExportAllButton(self):
+        self.__button_text_names.append("Export All Data")
+        self.__button_variable_names.append("export_all")
+
+    # this function sets the optional reset brushed data button.
+    def addResetBrushedButton(self):
+        self.__button_text_names.append("Reset Brushed Data")
+        self.__button_variable_names.append("reset_brushed")
+
+    # this function sets the optional reset brushed data button.
+    def addResetMarkedButton(self):
+        self.__button_text_names.append("Reset Marked Data")
+        self.__button_variable_names.append("reset_marked")
+
+    # this function sets the optional keep selected data button.
+    def addKeepSelectedButton(self):
+        self.__button_text_names.append("Keep Selected Data")
+        self.__button_variable_names.append("keep_selected")
+
+    # this function sets the optional remove selected data button.
+    def addRemoveSelectedButton(self):
+        self.__button_text_names.append("Remove Selected Data")
+        self.__button_variable_names.append("remove_selected")
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     # @@@@@@@ HELPER FUNCTIONS @@@@@@@@@@
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     # this function checks to see if inputted data is a list, or if it's a single piece of data it returns
-    # the data as the only element inside a list
-    # this function also checks to see that all inputted data is of the correct type
-    # this function is set up so if a float is entered as the data type, it will validate integers
+    #   the data as the only element inside a list.
+    # this function also checks to see that all inputted data is of the correct type.
+    # this function is set up so if a float is entered as the data type, it will validate integers.
     @staticmethod
     def __validate_data_is_list_or_single__(input_data, data_type):
         if type(input_data) == list:
@@ -425,7 +452,7 @@ class PyParasol:
         try:
             if file_name.split('.')[1] != extension_type:
                 return True
-        except Exception:
+        except ValueError:
             return True
         return False
 
@@ -449,7 +476,7 @@ class PyParasol:
                 for plot_number in range(len(self.__parasol_plot_list)):
                     if self.__parasol_plot_list[plot_number].plot_id == id_to_find:
                         id_index_list.append(plot_number)
-            except Exception:
+            except ValueError:
                 bad_data = True
         if bad_data:
             return 0
@@ -480,7 +507,7 @@ class PyParasol:
             return None
         try:
             float(alpha)
-        except BaseException:
+        except ValueError:
             print("set the alpha to a valid decimal number")
             return 0
         if (0 < alpha <= 1) is False:
@@ -632,7 +659,7 @@ class PyParasol:
         return final_html_line
 
     # this function writes the weights variables for the weighted sum option
-    def __write_weights_variable(self):
+    def __write_weights_variable__(self):
         if self.__weighted_weight_list is None or self.__weighted_variable_list is None:
             return ""
         final_html_lines = "\nvar weights = {"
@@ -652,16 +679,17 @@ class PyParasol:
             for header_to_hide in self.__parasol_plot_list[plot_number].columns_to_hide:
                 final_html_lines += '"' + header_to_hide + '", '
             # loops through every plots header list for each plot
-            for plot_headers in range(len(header_list)):
+            for plot_headers_number in range(len(header_list)):
                 # skips iteration so the headers of a plot don't get added to the plots own axes-to-hide list
-                if plot_headers == plot_number:
+                if plot_headers_number == plot_number:
                     continue
-                # if two plots have the same data set, skips so all data doesn't get erased
-                if self.__parasol_plot_list[plot_number].file_name == self.__parasol_plot_list[plot_headers].file_name:
+                # if two plots have the same data set, skips so all data doesn't get marked to hide
+                if self.__parasol_plot_list[plot_number].file_name ==\
+                        self.__parasol_plot_list[plot_headers_number].file_name:
                     continue
                 # if the current header list isn't for the current plot, adds the header lists to axes to hide
-                for header in range(len(header_list[plot_headers])):
-                    final_html_lines += '"' + header_list[plot_headers][header] + '", '
+                for header in range(len(header_list[plot_headers_number])):
+                    final_html_lines += '"' + header_list[plot_headers_number][header] + '", '
             final_html_lines += ']'
             if plot_number != len(header_list) - 1:
                 final_html_lines += ','
@@ -682,30 +710,48 @@ class PyParasol:
         return final_html_lines
 
     # this function writes a button declaration line
-    def __write_button_action_lines__(self, button_variable_name, action_item_line):
+    def __write_button_function__(self, button_variable_name, action_item_line):
         final_html_lines = "\nd3.select('#" + str(button_variable_name) + "').on('click',function() {"
         final_html_lines += str(action_item_line)
         final_html_lines += self.__write_function_end__()
         return final_html_lines
 
     # this function is the master function for assigning buttons to their actions
-    # it contains an inventory of what button is associated to what action
-    def __write_button_action_master__(self):
+    def __write_button_functions_master__(self):
         # if there are no buttons, skips
         if self.__button_text_names is None or self.__button_variable_names is None:
             return ""
         final_html_lines = ""
         # loops through all variable names
         for button_variable_name in self.__button_variable_names:
-            # inventory for assigning buttons to their actions
-            if button_variable_name == "export_brushed":
-                action = "\nps.exportData(type='brushed')"
-            elif button_variable_name == "export_marked":
-                action = "\nps.exportData(type='marked')"
-            else:
-                continue
-            final_html_lines += self.__write_button_action_lines__(button_variable_name, action)
+            # gets buttons action and then writes the full button action function
+            action = self.__get_button_action__(button_variable_name)
+            if action is not None:
+                final_html_lines += self.__write_button_function__(button_variable_name, action)
+
         return final_html_lines
+
+    # this function contains the inventory for assigning button variable names with their actions
+    def __get_button_action__(self, variable_name):
+        # @@@@@@@@ BUTTON ACTION INVENTORY @@@@@@@@@
+        if variable_name == "export_brushed":
+            action = "\nps.exportData(type='brushed')"
+        elif variable_name == "export_marked":
+            action = "\nps.exportData(type='marked')"
+        elif variable_name == "export_all":
+            action = "\nps.exportData({exportAll: true})"
+        elif variable_name == "reset_brushed":
+            action = "\nps.resetSelections('brushed')"
+        elif variable_name == "reset_marked":
+            action = "\nps.resetSelections('marked')"
+        elif variable_name == "keep_selected":
+            action = "\nps.keepData('both')"
+        elif variable_name == "remove_selected":
+            action = "\nps.removeData('both')"
+        else:
+            action = None
+
+        return action
 
     # this is the master function for writing all parasol html file lines
     # some of the functions are always called even if they won't do anything based on user options
@@ -718,25 +764,26 @@ class PyParasol:
         html_final += self.__write_end_body_start_script__(final_data_file)
         html_final += self.__write_axes_to_hide__(header_list)
         html_final += self.__write_axes_layout__()
-        html_final += self.__write_weights_variable()
+        html_final += self.__write_weights_variable__()
         html_final += self.__write_parasol_variable__()
         html_final += self.__write_specific_plot_attribute_lines__()
-        html_final += self.__write_button_action_master__()
+        html_final += self.__write_button_functions_master__()
         html_final += self.__write_function_end__()
         html_final += self.__write_script_end__()
 
         return html_final
 
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    # @@@@@@ FINISHING PLOT AND DISPLAYING PLOT @@@@@@@
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    # @@@@@@ FINISHING PLOT AND DISPLAYING PLOT @@@@@@
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     # this function starts the local server for the parallel plot and opens the web page
-    def startLocalServer(self, port=8000):
+    @staticmethod
+    def startLocalServer(port=8000):
         localhost_server = TCPServer(("", port), SimpleHTTPRequestHandler)
         localhost_server.serve_forever()
 
-    # this function opens up the webpage that's specified as the html file name, call after starting local server
+    # this function opens up the web page that's specified as the html file name, call after starting local server
     def displayWebpage(self, port=8000):
         open_website("http://localhost:" + str(port) + "/" + self.__html_file_name)
 
@@ -752,7 +799,7 @@ class PyParasol:
         if compile_success == 0:
             return
 
-        # opens up webpage first since any code following starting the server won't be run
+        # opens up web page first since any code following starting the server won't be run
         self.displayWebpage(port)
 
         # starts local server at specified port
@@ -762,7 +809,11 @@ class PyParasol:
 
     # this function compiles the parasol html file and the output csv file
     # this function *DOES NOT* start a local server and run open a parasol window, it just creates it
-    def compile(self):
+    def compile(self, html_file_name=None):
+        # assigns new html file name if one is specified
+        if html_file_name is not None:
+            self.setHTMLFileName(html_file_name)
+
         # if there is no data that has been added yet, exits program
         if len(self.__parasol_plot_list) == 0:
             print("no data files have been specified, will not compile")
