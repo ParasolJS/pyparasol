@@ -12,23 +12,6 @@ from socketserver import TCPServer
 #   the PyParasol class.
 # information about plot attributes can be found at https://github.com/ParasolJS/parasol-es/wiki/API-Reference
 class _ParasolPlot:
-    # plot data information
-    file_name = None
-    plot_id = None
-    plot_title = None
-    axes_layout = None
-    columns_to_hide = None
-
-    # styling attributes
-    alpha = None
-    color = None
-    alpha_on_brush = None
-    color_on_brush = None
-    reorderable = None
-    variables_scale_limit_list = None
-    variables_to_scale_list = None
-    variables_to_flip_list = None
-
     def __init__(self, file_name, plot_id):
         # only plot data information gets set to defaults
         # styling attributes remain None unless changed
@@ -40,6 +23,13 @@ class _ParasolPlot:
         self.variables_to_scale_list = []
         self.variables_scale_limit_list = []
         self.variables_to_flip_list = []
+
+        # styling attributes
+        self.alpha = None
+        self.color = None
+        self.alpha_on_brush = None
+        self.color_on_brush = None
+        self.reorderable = None
 
     # this function writes all the Parcoords attributes specific to the plot.
     # plot id number is which 
@@ -81,32 +71,6 @@ class _ParasolPlot:
 # the class parasol contains all attributes for a parasol plot as well as all methods for writing a parasol html file
 # all class variables and functions with __ in front of them are intended to not be used by the user
 class PyParasol:
-    # list of individual parasol plots
-    __parasol_plot_list = None
-
-    # general data - not specific to a single plot
-    __page_title = None
-    __page_tab_title = None
-    __attachGrid = None
-    __html_file_name = None
-    # linking plots data
-    __link_plots = None
-    __linked_plots_list = None
-    # color clustering data
-    __cluster_status = None
-    __number_of_cluster_colors = None
-    __plots_to_cluster_list = None
-    __variables_to_cluster = None
-    # weighted sums variables
-    __weighted_variable_list = None
-    __weighted_weight_list = None
-    __weighted_plots_to_add_weights = None
-
-    # button data
-    # in the form of variable names and text data for button
-    __button_variable_names = None
-    __button_text_names = None
-
     # initializes PyParasol object, sets class attributes to defaults.
     def __init__(self,
                  page_title="",
@@ -115,9 +79,13 @@ class PyParasol:
                  link_plots_status=True,
                  output_html_file_name="parasol.html"
                  ):
+
+        # list of individual parasol plots
         self.__parasol_plot_list = []
+        # in the form of variable names and text data for button
         self.__button_variable_names = []
         self.__button_text_names = []
+        # color clustering data
         self.__cluster_status = False
         # validating page title
         self.__page_title = page_title
@@ -129,6 +97,24 @@ class PyParasol:
         self.setLinkedStatus(link_plots_status)
         # setting output html file name
         self.setHTMLFileName(output_html_file_name)
+
+        # general attributes
+        self.__attachGrid = None
+        self.__html_file_name = None
+        # linking plots data
+        self.__link_plots = None
+        self.__linked_plots_list = None
+        # color clustering data
+        self.__number_of_cluster_colors = None
+        self.__plots_to_cluster_list = None
+        self.__variables_to_cluster = None
+        # weighted sums variables
+        self.__weighted_variable_list = None
+        self.__weighted_weight_list = None
+        self.__weighted_plots_to_add_weights = None
+
+        # the final data file name used only to verify that file exists
+        self.__final_data_file_name = None
 
     # Adding csv file with data you want to be displayed as its own parallel plot.
     # plot name is what the header name will be above the plot on the Parasol application.
@@ -148,10 +134,6 @@ class PyParasol:
                 brushed_alpha=None,
                 reorderable_status=True
                 ):
-
-        # ensuring file exists
-        temp = open(file_name, 'r')
-        temp.close()
 
         # creating new parasol plot item
         new_plot = _ParasolPlot(file_name, str(plot_id))
@@ -799,6 +781,10 @@ class PyParasol:
         if compile_success == 0:
             return
 
+        # ensuring file exists
+        temp = open(self.__final_data_file_name, 'r')
+        temp.close()
+
         # opens up web page first since any code following starting the server won't be run
         self.displayWebpage(port)
 
@@ -841,6 +827,7 @@ class PyParasol:
             header_list = combine_csv(file_name_list, output_data_file_name)
 
         # writing the html file
+        self.__final_data_file_name = output_data_file_name
         html_file = self.__write_parasol_html_file__(header_list, output_data_file_name)
 
         # writing the html file contents to the actual html file
