@@ -1,10 +1,16 @@
 # PyParasol
 # For more information on PyParasol and for a full API, refer to https://github.com/ParasolJS/pyparasol
 
-from combine_csv import combine_csv
+import os
+import shutil
+
+from .combine_csv import combine_csv
 from http.server import SimpleHTTPRequestHandler
 from webbrowser import open as open_website
 from socketserver import TCPServer
+
+_STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+_ASSETS = ("parasol.standalone.js", "d3.v5.min.js", "parasol.css")
 
 
 # this class contains all the options for a single plot, and a method for writing all the plot specific attributes.
@@ -836,5 +842,10 @@ class PyParasol:
             self.__html_file_name = "parasol.html"
         with open(self.__html_file_name, 'w') as html_output:
             html_output.write(html_file)
+
+        # copy static assets alongside the HTML so the local server can serve them
+        html_dir = os.path.dirname(os.path.abspath(self.__html_file_name))
+        for asset in _ASSETS:
+            shutil.copy2(os.path.join(_STATIC_DIR, asset), os.path.join(html_dir, asset))
 
         return 1

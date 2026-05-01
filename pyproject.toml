@@ -1,0 +1,18 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "pyparasol"
+version = "1.0.0"
+description = "Python wrapper for the Parasol parallel coordinates visualization library"
+readme = "README.md"
+license = "MIT"
+authors = ["Kasprzyk Research Group, University of Colorado Boulder"]
+homepage = "https://github.com/ParasolJS/pyparasol"
+packages = [{include = "pyparasol"}]
+include = ["pyparasol/static/*"]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+pandas = ">=1.3"
